@@ -23,7 +23,8 @@ function db(): PDO
         throw new RuntimeException('The private storage directory could not be created.');
     }
     $storage = realpath($storage);
-    $public = realpath(($_SERVER['DOCUMENT_ROOT'] ?? '') ?: ROOT . '/public');
+    $defaultPublic = is_dir(ROOT . '/public') ? ROOT . '/public' : ROOT . '/public_html';
+    $public = realpath(($_SERVER['DOCUMENT_ROOT'] ?? '') ?: $defaultPublic);
     if ($storage === false || $public === false) {
         throw new RuntimeException('The storage or document root could not be resolved.');
     }
