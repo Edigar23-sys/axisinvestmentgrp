@@ -39,4 +39,3 @@ Open `http://127.0.0.1:8127`. The default local configuration creates its own pr
 - The mix of perspectives, media and downloadable resources drew on [Harmony](https://www.harmony.co.za/investors/), [TPG](https://www.tpg.com/), [World Economic Forum](https://www.weforum.org/), [BCG](https://www.bcg.com/), and [McKinsey](https://www.mckinsey.com/).
 
 The supplied Axis logo is used in the site header and footer. The city, SACCO, advisory, solar and port images are generated editorial illustrations. Projects, brands and investment listings start empty so Axis can add approved entries and their own photographs.
-

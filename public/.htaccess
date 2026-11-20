@@ -1,0 +1,6 @@
+RewriteEngine On
+RewriteRule "^\.well-known/(acme-challenge|pki-validation)/[a-zA-Z0-9_.-]+$" - [L]
+RewriteRule "(^|/)\." - [F]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ index.php [L]
+DirectoryIndex index.php
