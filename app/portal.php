@@ -107,13 +107,16 @@ function investorPage(?array $user, string $error): void
     }, private: true);
 }
 
-function activationPage(string $token, string $error): void
+function activationPage(string $token, string $error, string $role): void
 {
     session();
+    $label = $role === 'admin' ? 'admin' : 'investor';
     $valid = preg_match('/^[a-f0-9]{64}$/D', $token)
-        && query('SELECT 1 FROM invites WHERE token_hash=? AND expires>=?', [hash('sha256', $token), time()])->fetchColumn();
-    layout('Activate account', function () use ($valid, $error) {
-        pageHead('Set up your investor account', 'Create a password to access your Axis investor portal.');
+        && query('SELECT 1 FROM invites i JOIN users u ON i.user_id=u.id
+                  WHERE i.token_hash=? AND i.expires>=? AND u.role=? AND u.active=1 AND u.password_hash IS NULL',
+            [hash('sha256', $token), time(), $role])->fetchColumn();
+    layout('Activate account', function () use ($valid, $error, $label) {
+        pageHead('Set up your ' . $label . ' account', 'Create a password to access your Axis ' . $label . ' portal.');
         ?><section class="section shell narrow">
         <?php notice($error, true); ?>
         <?php if ($valid): ?>

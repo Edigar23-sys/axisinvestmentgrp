@@ -22,8 +22,8 @@ function handlePost(string $area, string $page, string $kind, ?array $user): voi
     if ($area === 'investors' && $page === 'apply') {
         submitRequest($kind);
     }
-    if ($area === 'investors' && $page === 'activate') {
-        activateInvestor(param('token'));
+    if (in_array($area, ['admin', 'investors'], true) && $page === 'activate') {
+        activateAccount(param('token'), $area === 'admin' ? 'admin' : 'investor');
     }
     if (in_array($area, ['admin', 'investors'], true) && $action === 'login') {
         login($area === 'admin' ? 'admin' : 'investor');
@@ -78,7 +78,7 @@ function run(): void
     }
     $isForm = ($area === 'advisory' && $page === '')
         || ($area === 'investors' && in_array($page, ['', 'apply', 'activate'], true))
-        || ($area === 'admin' && ($page === '' || $page === 'requests' || isset(COLLECTIONS[$page])));
+        || ($area === 'admin' && (in_array($page, ['', 'requests', 'activate'], true) || isset(COLLECTIONS[$page])));
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$isForm) {
         header('Allow: GET, HEAD');
         http_response_code(405);
@@ -117,11 +117,15 @@ function run(): void
     } elseif ($area === 'investors' && $isForm) {
         match ($page) {
             'apply' => applyPage($kind, $error),
-            'activate' => activationPage(param('token'), $error),
+            'activate' => activationPage(param('token'), $error, 'investor'),
             default => investorPage(($user['role'] ?? '') === 'investor' ? $user : null, $error),
         };
     } elseif ($area === 'admin' && $isForm) {
-        adminPage($user, $page, $error);
+        if ($page === 'activate') {
+            activationPage(param('token'), $error, 'admin');
+        } else {
+            adminPage($user, $page, $error);
+        }
     } elseif (!isset(COLLECTIONS[$area]) || $area === 'portfolio' || !detail($area, $page)) {
         notFound();
     }

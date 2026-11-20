@@ -7,6 +7,32 @@ require __DIR__ . '/../app/bootstrap.php';
 
 try {
     $address = email($argv[1] ?? '');
+    if (($argv[2] ?? '') === '--invite') {
+        $db = db();
+        $db->beginTransaction();
+        try {
+            query("INSERT INTO users (email,role) VALUES (?,'admin') ON CONFLICT(email) DO NOTHING", [$address]);
+            $userId = query(
+                "SELECT id FROM users WHERE email = ? AND role = 'admin' AND password_hash IS NULL AND active = 1",
+                [$address]
+            )->fetchColumn();
+            if (!$userId) {
+                throw new InvalidArgumentException('This address cannot receive a first-time administrator invitation.');
+            }
+            $token = bin2hex(random_bytes(32));
+            query(
+                'INSERT INTO invites (token_hash,user_id,expires) VALUES (?,?,?)
+                 ON CONFLICT(user_id) DO UPDATE SET token_hash = excluded.token_hash, expires = excluded.expires',
+                [hash('sha256', $token), $userId, time() + 172800]
+            );
+            $db->commit();
+        } catch (Throwable $error) {
+            $db->rollBack();
+            throw $error;
+        }
+        echo rtrim($config['origin'], '/') . '/admin/activate?token=' . $token . PHP_EOL;
+        exit;
+    }
     $password = bin2hex(random_bytes(16));
     $statement = query(
         "INSERT INTO users (email,password_hash,role) VALUES (?,?,'admin')

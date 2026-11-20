@@ -96,7 +96,7 @@ function issueInvite(int $requestId): void
     redirect('/admin/requests?id=' . $requestId);
 }
 
-function activateInvestor(string $token): void
+function activateAccount(string $token, string $role): void
 {
     throttle('activate', 12, 900);
     if (!preg_match('/^[a-f0-9]{64}$/D', $token)) {
@@ -106,22 +106,24 @@ function activateInvestor(string $token): void
     $db = db();
     $db->beginTransaction();
     try {
-        $invite = query(
-            "DELETE FROM invites WHERE token_hash = ? AND expires >= ? AND user_id IN
-             (SELECT id FROM users WHERE role = 'investor' AND active = 1 AND password_hash IS NULL) RETURNING user_id",
-            [hash('sha256', $token), time()]
-        )->fetch();
-        if (!$invite) {
+        $hash = hash('sha256', $token);
+        $updated = query(
+            'UPDATE users SET password_hash = ? WHERE role = ? AND active = 1 AND password_hash IS NULL
+             AND id = (SELECT user_id FROM invites WHERE token_hash = ? AND expires >= ?)',
+            [$password, $role, $hash, time()]
+        );
+        if (!$updated->rowCount()) {
             throw new InvalidArgumentException('This invitation is invalid or has expired. Contact Axis for a new link.');
         }
-        query('UPDATE users SET password_hash = ? WHERE id = ?', [$password, $invite['user_id']]);
+        $userId = (int) query('SELECT user_id FROM invites WHERE token_hash = ?', [$hash])->fetchColumn();
+        query('DELETE FROM invites WHERE token_hash = ?', [$hash]);
         $db->commit();
     } catch (Throwable $error) {
         $db->rollBack();
         throw $error;
     }
-    startLogin((int) $invite['user_id']);
-    redirect('/investors');
+    startLogin($userId);
+    redirect($role === 'admin' ? '/admin' : '/investors');
 }
 
 function published(string $kind, string $category = '', int $limit = 24, int $offset = 0): array

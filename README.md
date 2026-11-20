@@ -6,10 +6,10 @@ The application is server-rendered PHP with a SQLite database. Uploaded images, 
 
 ## cPanel setup
 
-1. Use PHP 8.3 or newer with `pdo_sqlite` and `fileinfo` enabled and SQLite 3.35 or newer. Apache or LiteSpeed needs to honor the rewrite rules in `public/.htaccess`. Set PHP's `upload_max_filesize` to at least `20M` and `post_max_size` to at least `28M` for the largest uploads.
+1. Use PHP 8.3 or newer with `pdo_sqlite` and `fileinfo` enabled and SQLite 3.24 or newer. Apache or LiteSpeed needs to honor the rewrite rules in `public/.htaccess`. Set PHP's `upload_max_filesize` to at least `20M` and `post_max_size` to at least `28M` for the largest uploads.
 2. Set the domain's document root to the deployed `public/` directory. Keep `app/`, `bin/`, `config.php`, and `storage/` outside every web document root. If the primary domain is fixed to `public_html`, the equivalent layout places the contents of `public/` in `public_html` and places `app/`, `bin/`, and the configuration beside `public_html`. Include the hidden `.htaccess` file. Preserve any existing host-specific PHP directives when merging rewrite configuration.
 3. Copy `config.example.php` to `config.php` next to the `app/` directory. Set `origin` to the final HTTPS website URL and use cPanel's HTTPS redirect. Ensure the PHP process can write to the private storage path, and that terminal commands use the same PHP version as the site. Configure PHP to log server errors with `display_errors` disabled.
-4. From the directory containing `bin/`, run `php bin/admin.php admin@example.com`, substituting the administrative email. The terminal prints a generated password once. Store it in a password manager. Running the same command again for that admin address rotates the password.
+4. From the directory containing `bin/`, run `php bin/admin.php admin@example.com --invite`, substituting the administrative email. Give the one-time link to the administrator privately. It expires in 48 hours and lets them choose a password. Running the command without `--invite` instead generates a new password for the specified administrative account.
 5. Sign in at `/admin` and publish the first approved entries. Back up the private database and configuration with the hosting account's backup procedure. The database backup contains uploads and enquiry records, so keep it private.
 
 [cPanel MultiPHP Manager](https://docs.cpanel.net/cpanel/software/multiphp-manager-for-cpanel/)

@@ -116,11 +116,20 @@ function throttle(string $scope, int $limit, int $seconds): void
 {
     $window = intdiv(time(), $seconds);
     $bucket = hash('sha256', $scope . '|' . ($_SERVER['REMOTE_ADDR'] ?? 'local'));
-    $count = (int) query(
-        'INSERT INTO rate_limits (bucket, window, hits, expires) VALUES (?, ?, 1, ?)
-         ON CONFLICT(bucket, window) DO UPDATE SET hits = hits + 1 RETURNING hits',
-        [$bucket, $window, ($window + 2) * $seconds]
-    )->fetchColumn();
+    $db = db();
+    $db->beginTransaction();
+    try {
+        query(
+            'INSERT INTO rate_limits (bucket, window, hits, expires) VALUES (?, ?, 1, ?)
+             ON CONFLICT(bucket, window) DO UPDATE SET hits = hits + 1',
+            [$bucket, $window, ($window + 2) * $seconds]
+        );
+        $count = (int) query('SELECT hits FROM rate_limits WHERE bucket = ? AND window = ?', [$bucket, $window])->fetchColumn();
+        $db->commit();
+    } catch (Throwable $error) {
+        $db->rollBack();
+        throw $error;
+    }
     if ($count > $limit) {
         http_response_code(429);
         throw new InvalidArgumentException('Too many attempts. Try again later.');
