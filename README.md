@@ -38,4 +38,6 @@ Open `http://127.0.0.1:8127`. The default local configuration creates its own pr
 - The product navigation, advisory paths and separate investor entry points drew on [J.P. Morgan Asset Management](https://am.jpmorgan.com/us/en/asset-management/adv/), [Tanmia](https://www.tanmia.om/), [MCB Capital Markets](https://mcbcapitalmarkets.mu/), [Apollo](https://www.apollo.com/), [Carlyle](https://www.carlyle.com/), and [Blackstone](https://www.blackstone.com/).
 - The mix of perspectives, media and downloadable resources drew on [Harmony](https://www.harmony.co.za/investors/), [TPG](https://www.tpg.com/), [World Economic Forum](https://www.weforum.org/), [BCG](https://www.bcg.com/), and [McKinsey](https://www.mckinsey.com/).
 
-The supplied Axis logo is used in the site header and footer. The city, SACCO, advisory, solar and port images are generated editorial illustrations. Projects, brands and investment listings start empty so Axis can add approved entries and their own photographs.
+The supplied Axis logo is used in the site header and footer. The capital network feature uses a photograph credited to MEAACT and Stuart Price. [Image source and reuse information](https://commons.wikimedia.org/wiki/File:2015_07_31_Mombasa_Port_JPEG_RESIZED_0045.jpg)
+
+The other supplied site images include generated editorial illustrations. Projects, brands and investment listings start empty so Axis can add approved entries and their own photographs.

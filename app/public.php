@@ -21,9 +21,11 @@ const MAIN_LINKS = [
     '/projects' => 'Projects', '/products' => 'Products', '/portfolio' => 'Portfolio', '/insights' => 'Insights',
 ];
 
-function button(string $path, string $label, string $style = 'primary'): void
+function button(string $path, string $label, string $style = 'primary', bool $newTab = false): void
 {
-    echo '<a class="button ' . e($style) . '" href="' . e($path) . '">' . e($label) . '</a>';
+    $attributes = $newTab ? ' target="_blank" rel="noopener noreferrer"' : '';
+    $hint = $newTab ? '<span class="visually-hidden"> (opens in a new tab)</span>' : '';
+    echo '<a class="button ' . e($style) . '" href="' . e($path) . '"' . $attributes . '>' . e($label) . $hint . '</a>';
 }
 
 function layout(string $title, callable $content, string $description = 'Axis Investment Group connects capital with Africa’s most promising ventures.', bool $private = false): void
@@ -66,7 +68,7 @@ function layout(string $title, callable $content, string $description = 'Axis In
             <div><a class="footer-brand" href="/"><img src="/assets/axis-logo.png" width="580" height="329" alt="Axis Investment Group"></a><p>Connecting capital with Africa’s most promising ventures.</p></div>
             <div><h2>Explore Axis</h2><a href="/about">About us</a><a href="/advisory">Advisory</a><a href="/sectors">Sectors</a><a href="/portfolio">Portfolio</a><a href="/insights">Insights & resources</a></div>
             <div><h2>Invest with Axis</h2><a href="/projects">Browse projects</a><a href="/products">Investment products</a><a href="/products/sacco">For SACCOs</a><a href="/investors">Investor login</a><?php button('/investors/apply', 'Invest Now'); ?></div>
-            <div><h2>Contact</h2><a href="mailto:info@axisinvestmentgrp.com">info@axisinvestmentgrp.com</a><a href="tel:+256776494472">+256 776 494 472</a><p>P.O. Box 194269<br>Kampala, Uganda</p></div>
+            <div><h2>Contact</h2><a href="mailto:info@axisinvestmentgrp.com">info@axisinvestmentgrp.com</a><a href="tel:+256776494472">+256 776 494 472</a><p class="footer-cities">Kampala | Johannesburg | Lagos | Dubai | London | Hong Kong</p></div>
         </div>
         <div class="footer-base"><small>&copy; <?= gmdate('Y') ?> Axis Investment Group</small><a href="/privacy">Privacy</a></div>
     </div>
@@ -96,13 +98,30 @@ function assetUrl(int|string $id): string
     return '/files/' . (int) $id;
 }
 
-function cards(array $items, string $kind): void
+function capitalNetworkPhoto(): void
 {
-    ?><div class="card-grid"><?php foreach ($items as $item): ?>
-        <article class="content-card">
+    ?>
+    <figure class="network-figure">
+        <img class="editorial-photo" src="/assets/mombasa-port.jpg" width="1280" height="832" alt="Cargo containers and cranes at the Port of Mombasa, Kenya" loading="lazy" decoding="async">
+        <figcaption>Port of Mombasa, Kenya. <a href="https://commons.wikimedia.org/wiki/File:2015_07_31_Mombasa_Port_JPEG_RESIZED_0045.jpg">MEAACT photo / Stuart Price</a></figcaption>
+    </figure>
+    <?php
+}
+
+function cards(array $items, string $kind, bool $inSection = false): void
+{
+    $heading = $inSection ? 'h3' : 'h2';
+    $label = match ($kind) {
+        'projects' => 'View project',
+        'insights' => 'View insight',
+        default => 'View product',
+    };
+    ?><div class="card-grid content-grid"><?php foreach ($items as $item): ?>
+        <article class="content-card surface">
             <a href="/<?= e($kind) ?>/<?= e($item['slug']) ?>">
-                <?php if ($item['image_id']): ?><img class="card-image" src="<?= assetUrl($item['image_id']) ?>" alt="" loading="lazy"><?php endif; ?>
-                <div class="card-copy"><p class="eyebrow"><?= e($item['category']) ?></p><h3><?= e($item['title']) ?></h3><p><?= e($item['summary']) ?></p></div>
+                <?php if ($item['image_id']): ?><div class="card-media"><img class="card-image" src="<?= assetUrl($item['image_id']) ?>" alt="" loading="lazy"></div><?php endif; ?>
+                <div class="card-copy"><p class="eyebrow"><?= e($item['category']) ?></p><<?= $heading ?> class="card-title"><?= e($item['title']) ?></<?= $heading ?>><p><?= e($item['summary']) ?></p></div>
+                <div class="card-action"><span><?= e($label) ?></span><span class="tile-indicator" aria-hidden="true"></span></div>
             </a>
         </article>
     <?php endforeach; ?></div><?php
@@ -115,41 +134,36 @@ function home(): void
     <section class="hero">
         <div class="shell hero-inner">
             <p class="eyebrow">Africa-focused investment & advisory</p>
-            <h1>Investing for<br>an <em>Impact.</em></h1>
+            <h1>Investing for<br>an <span>Impact.</span></h1>
             <p class="hero-copy">Connecting capital with Africa’s most promising ventures.</p>
             <div class="actions"><?php button('/investors/apply', 'Invest Now'); ?><?php button('/projects', 'Browse Projects', 'outline-light'); ?></div>
         </div>
     </section>
-    <section class="section shell split">
-        <div class="intro"><p class="eyebrow">What we do</p><h2>Capital with purpose.<br>Advice with direction.</h2><p>We help African businesses prepare for growth and connect investors with opportunities across seven sectors.</p><a class="text-link" href="/about">Get to know Axis</a>
-            <img class="editorial-photo advisory-photo" src="/assets/advisory-meeting.jpg" width="1200" height="800" alt="Business advisers reviewing a plan together around a conference table" loading="lazy" decoding="async">
-        </div>
+    <section class="section shell split home-services">
+        <div class="intro"><p class="eyebrow">What we do</p><h2>Capital with purpose.<br>Advice with direction.</h2><p>We help African businesses prepare for growth and connect investors with opportunities across seven sectors.</p><a class="text-link" href="/about">Get to know Axis</a></div>
         <div class="service-list"><?php foreach (SERVICES as $key => [$name, $description]): ?>
-            <a href="/advisory#<?= e($key) ?>"><div><h3><?= e($name) ?></h3><p><?= e($description) ?></p></div><span aria-hidden="true">+</span></a>
+            <a href="/advisory#<?= e($key) ?>"><div><h3><?= e($name) ?></h3><p><?= e($description) ?></p></div><span class="tile-indicator" aria-hidden="true"></span></a>
         <?php endforeach; ?></div>
     </section>
     <section class="section tinted"><div class="shell">
         <div class="section-heading"><div><p class="eyebrow">Where we focus</p><h2>Seven sectors for African growth</h2></div><a class="text-link" href="/sectors">Explore all sectors</a></div>
-        <div class="sector-feature">
-            <img class="editorial-photo sector-photo" src="/assets/solar-infrastructure.jpg" width="1200" height="800" alt="Engineers walking between rows of solar panels in a green landscape" loading="lazy" decoding="async">
-            <div class="sector-grid"><?php foreach (SECTORS as $index => [$name, $description]): ?>
-                <a href="/sectors#sector-<?= $index + 1 ?>"><h3><?= e($name) ?></h3><p><?= e($description) ?></p></a>
-            <?php endforeach; ?></div>
-        </div>
+        <div class="sector-grid focus-grid"><?php foreach (SECTORS as $index => [$name, $description]): ?>
+            <a href="/sectors#sector-<?= $index + 1 ?>"><div><h3><?= e($name) ?></h3><p><?= e($description) ?></p></div><span class="tile-indicator" aria-hidden="true"></span></a>
+        <?php endforeach; ?></div>
     </div></section>
-    <section class="section shell split network-feature">
-        <img class="editorial-photo network-photo" src="/assets/east-africa-port.jpg" width="1200" height="800" alt="Aerial view of a coastal container terminal with cargo cranes" loading="lazy" decoding="async">
-        <div>
+    <section class="section shell network-feature">
+        <div class="split network-summary">
             <div class="intro"><p class="eyebrow">Global capital network</p><h2>Connecting Africa with the world’s capital markets</h2><p>We seek to bring international investors, development finance institutions and local capital pools into conversations about African growth.</p><a class="text-link" href="/about#capital-network">Explore our capital network</a></div>
-            <div class="network-links">
-                <a href="/investors/apply?type=institutional"><h3>Institutional investors</h3><span>Discuss African investment opportunities</span></a>
-                <a href="/investors/apply?type=individual"><h3>Individual investors</h3><span>Tell us what you’re looking for</span></a>
-                <a href="/products/sacco"><h3>SACCOs & local capital pools</h3><span>Explore capital mobilization options</span></a>
-            </div>
+            <?php capitalNetworkPhoto(); ?>
+        </div>
+        <div class="network-links">
+            <a href="/investors/apply?type=institutional"><h3>Institutional investors</h3><span>Discuss African investment opportunities</span></a>
+            <a href="/investors/apply?type=individual"><h3>Individual investors</h3><span>Tell us what you’re looking for</span></a>
+            <a href="/products/sacco"><h3>SACCOs & local capital pools</h3><span>Explore capital mobilization options</span></a>
         </div>
     </section>
     <?php if ($insights): ?>
-    <section class="section tinted"><div class="shell"><div class="section-heading"><h2>Latest insights</h2><a class="text-link" href="/insights">See all insights</a></div><?php cards($insights, 'insights'); ?></div></section>
+    <section class="section tinted"><div class="shell"><div class="section-heading"><h2>Latest insights</h2><a class="text-link" href="/insights">See all insights</a></div><?php cards($insights, 'insights', true); ?></div></section>
     <?php endif; ?>
     <?php callout('Invest with Axis', 'Tell us about your investment goals or the business you want to grow.', '/investors/apply', 'Invest Now'); ?>
     <?php });
@@ -160,9 +174,9 @@ function about(): void
     layout('About', function () { 
         pageHead('Investing for an Impact.', 'We work to unlock Africa’s potential through strategic investment that supports growth, innovation and inclusive prosperity.', 'About Axis');
         ?>
-        <section class="shell section split">
-            <div><h2>Our mission</h2><p>We help mobilize capital and create long-term value in the sectors where we work. Our ambition is to make impact-driven investing a standard for how success is measured across African markets.</p></div>
-            <div><h2>Our values</h2><dl class="values">
+        <section class="shell section split principles">
+            <div class="mission-panel"><h2>Our mission</h2><p>We help mobilize capital and create long-term value in the sectors where we work. Our ambition is to make impact-driven investing a standard for how success is measured across African markets.</p></div>
+            <div><h2>Our values</h2><dl class="values principles-grid">
                 <div><dt>Integrity</dt><dd>Do business the right way.</dd></div>
                 <div><dt>Innovation</dt><dd>Mobilize and apply capital to address African challenges.</dd></div>
                 <div><dt>Impact</dt><dd>Create value that uplifts communities.</dd></div>
@@ -172,7 +186,7 @@ function about(): void
         <section class="section tinted" id="capital-network"><div class="shell">
             <div class="split network-summary">
                 <div class="intro"><h2>Global capital network</h2><p>Our outreach focuses on strategic investors, private equity firms and development finance institutions across international markets.</p></div>
-                <img class="editorial-photo" src="/assets/east-africa-port.jpg" width="1200" height="800" alt="Aerial view of a coastal container terminal with cargo cranes" loading="lazy" decoding="async">
+                <?php capitalNetworkPhoto(); ?>
             </div>
             <div class="sector-grid region-grid">
                 <div><h3>Asia</h3><p>Japan, South Korea, Thailand, Singapore, Taiwan, Hong Kong and Malaysia.</p></div>
@@ -191,9 +205,9 @@ function sectors(): void
 {
     layout('Sectors', function () {
         pageHead('Where we focus', 'Explore the seven sectors that guide our investment and advisory work.');
-        ?><section class="section shell">
+        ?><section class="section shell sectors-section">
             <img class="editorial-photo sector-banner" src="/assets/solar-infrastructure.jpg" width="1200" height="800" alt="Engineers walking between rows of solar panels in a green landscape" decoding="async">
-            <div class="sector-grid"><?php foreach (SECTORS as $index => [$name, $description]): ?>
+            <div class="sector-grid sectors-directory"><?php foreach (SECTORS as $index => [$name, $description]): ?>
                 <div id="sector-<?= $index + 1 ?>"><h2><?= e($name) ?></h2><p><?= e($description) ?></p><a class="text-link" href="/projects?category=<?= rawurlencode($name) ?>">Browse related projects</a></div>
             <?php endforeach; ?></div>
         </section><?php
@@ -227,12 +241,19 @@ function listing(string $kind): void
             <?php endif; ?>
             <?php if ($items && $kind === 'portfolio'): ?>
                 <div class="card-grid"><?php foreach ($items as $item): ?>
-                    <details class="portfolio-card"><summary><?php if ($item['image_id']): ?><img src="<?= assetUrl($item['image_id']) ?>" alt="" loading="lazy"><?php endif; ?><strong><?= e($item['title']) ?></strong></summary>
-                    <div><p><?= e($item['summary']) ?></p><?php if ($item['body']): ?><p><?= nl2br(e($item['body'])) ?></p><?php endif; ?><?php if ($item['external_url']): button($item['external_url'], 'Visit site', 'outline'); endif; ?></div></details>
+                    <details class="portfolio-card surface">
+                        <summary>
+                            <?php if ($item['image_id']): ?><span class="portfolio-logo"><img src="<?= assetUrl($item['image_id']) ?>" alt="" loading="lazy"></span><?php endif; ?>
+                            <span class="portfolio-name"><strong><?= e($item['title']) ?></strong><span class="tile-indicator" aria-hidden="true"></span></span>
+                        </summary>
+                        <div><p><?= e($item['summary']) ?></p><?php if ($item['body']): ?><p><?= nl2br(e($item['body'])) ?></p><?php endif; ?>
+                            <?php if ($item['external_url']): button($item['external_url'], 'Visit site', 'outline', newTab: true); endif; ?>
+                        </div>
+                    </details>
                 <?php endforeach; ?></div>
             <?php elseif ($items): cards($items, $kind); ?>
             <?php else: ?>
-                <div class="empty"><h2><?= $category ? 'No listings in this category yet' : 'No published listings yet' ?></h2><?php if ($kind === 'projects' || $kind === 'products'): ?><p>You can still tell us what you’re looking for.</p><a class="text-link" href="/investors/apply">Register your interest</a><?php endif; ?></div>
+                <div class="empty surface"><h2><?= $category ? 'No listings in this category yet' : 'No published listings yet' ?></h2><?php if ($kind === 'projects' || $kind === 'products'): ?><p>You can still tell us what you’re looking for.</p><a class="text-link" href="/investors/apply">Register your interest</a><?php endif; ?></div>
             <?php endif; ?>
             <?php if ($page > 1 || $hasNext): ?>
                 <nav class="actions" aria-label="Listing pages">
@@ -278,7 +299,7 @@ function detail(string $kind, string $slug): bool
                 <?php elseif (str_starts_with($item['file_mime'], 'audio/')): ?><audio controls preload="metadata" src="<?= assetUrl($item['file_id']) ?>"></audio>
                 <?php else: button(assetUrl($item['file_id']), 'Download PDF', 'outline'); endif; ?>
             <?php endif; ?>
-            <?php if ($item['external_url']): button($item['external_url'], 'Visit related website', 'outline'); endif; ?>
+            <?php if ($item['external_url']): button($item['external_url'], 'Visit related website', 'outline', newTab: $kind === 'insights'); endif; ?>
             <?php if ($kind === 'projects' || $kind === 'products'): button('/investors/apply?topic=' . rawurlencode($item['title']), 'Register interest'); endif; ?>
             </div>
         </article>
