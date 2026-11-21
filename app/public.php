@@ -32,6 +32,8 @@ function layout(string $title, callable $content, string $description = 'Axis In
 {
     $path = rtrim(explode('?', $_SERVER['REQUEST_URI'] ?? '/', 2)[0], '/') ?: '/';
     $main = $path === '/' ? 'Axis Investment Group | Investing for an Impact' : $title . ' | Axis Investment Group';
+    $stylesheet = ($_SERVER['DOCUMENT_ROOT'] ?? '') . '/assets/style.css';
+    $styleVersion = is_file($stylesheet) ? filemtime($stylesheet) : false;
     ?>
 <!doctype html>
 <html lang="en">
@@ -43,7 +45,7 @@ function layout(string $title, callable $content, string $description = 'Axis In
     <?php if ($private): ?><meta name="robots" content="noindex,nofollow"><?php endif; ?>
     <meta name="theme-color" content="#101b2b">
     <link rel="icon" href="/assets/axis-icon.png" type="image/png">
-    <link rel="stylesheet" href="/assets/style.css">
+    <link rel="stylesheet" href="/assets/style.css<?= $styleVersion ? '?v=' . $styleVersion : '' ?>">
     <script src="/assets/site.js" defer></script>
 </head>
 <body>
